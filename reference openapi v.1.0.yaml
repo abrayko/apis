@@ -1,0 +1,510 @@
+openapi: 3.0.3
+info:
+  title: Сервис работы со справочниками и их маппингами
+  description: >-
+    <b>Конфигурирование</b>: Производится с помощью переменных окружения<br>
+  version: 0.1.0
+  contact:
+    name: Разработчик - Брайко Артем Николаевич
+    email: artem.brayko@south.rt.ru
+tags:
+  - name: references
+    description: Справочники
+  - name: values
+    description: Значения справочников
+  - name: mappings
+    description: Маппинги значений различных справочников
+
+paths:
+  /references:
+    get:
+      description: Получить список справочников
+      tags:
+        - references
+      operationId: getReferenceList
+      parameters:
+        - name: code
+          in: query
+          description: Код справочника
+          schema:
+            type: string
+      responses:
+        200:
+          description: Возвращает список справочников
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Reference'
+
+    post:
+      description: Добавить справочник
+      tags:
+        - references
+      operationId: createReference
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Reference'
+      responses:
+        201:
+          description: Возвращает добавленную запись справочника
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reference'
+
+  /references/{id}:
+    get:
+      description: Получить справочник по id
+      tags:
+        - references
+      operationId: getReferenceById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Возвращает запись справочника
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reference'  
+
+    put:
+      description: Обновить справочник
+      tags:
+        - references
+      operationId: updateReference
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Reference'
+      responses:
+        200:
+          description: Возвращает обновленную запись справочника
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reference'  
+          
+    delete:
+      description: Удалить справочник
+      tags:
+        - references
+      operationId: deleteReference
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        204:
+          description: no content
+        400:
+          description: Невозможно удалить справочник
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      error:
+                        type: string
+                        enum: 
+                        - EX_ILLEGAL_OPERATION
+                      message:
+                        type: string
+                        enum:
+                          - "У значений справочника %s присутствуют маппинги"
+
+
+  /references/{refid}/values:
+    get:
+      description: Получить значения справочника
+      tags:
+        - values
+      parameters:
+        - name: refid
+          description: Идентификатор справочника
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Возвращает список значений справочника
+          content:
+            application/json:
+              schema: 
+                type: array
+                items:
+                  $ref: '#/components/schemas/Value'
+
+    put:
+      description: Добавить значения справочника
+      tags:
+        - values
+      parameters:
+        - name: refid
+          description: идентификатор справочника
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Value'
+      responses:
+        200:
+          description: Список добавленных значений справочника
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Value'
+    
+  /references/values:
+    get:
+      description: Получить значения справочника по его коду и мастер-системе
+      tags:
+        - values
+      parameters:
+        - name: ref-code
+          description: Код справочника
+          in: query
+          required: true
+          schema: 
+            type: string
+        - name: owner
+          description: Код мастер-системы справочника
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: value
+          description: Значение справочника
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        200:
+          description: Возвращает список значений справочника
+          content:
+            application/json:
+              schema: 
+                type: array
+                items:
+                  $ref: '#/components/schemas/Value'
+
+  /references/{refid}/values/{id}:
+    get:
+      description: Получить определенное значение справочника
+      tags:
+        - values
+      parameters:
+        - name: refid
+          description: Идентификатор справочника
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: id
+          description: Идентификатор значения справочника
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Возвращает значение справочника
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Value'
+
+    delete:
+      description: Удалить значение справочника
+      tags:
+        - values
+      parameters:
+        - name: refid
+          description: Идентификатор справочника
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: id
+          description: Идентификатор значения справочника
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        204:
+          description: no content
+        400:
+          description: Невозможно удалить значение справочника
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      error:
+                        type: string
+                        enum: 
+                        - EX_ILLEGAL_OPERATION
+                      message:
+                        type: string
+                        enum:
+                          - "У значения %s справочника %s присутствуют маппинги"
+
+  /references/mappings:
+    get:
+      description: Получить маппинги справочника
+      tags:
+        - mappings
+      parameters:
+        - name: src-owner
+          description: Код мастер-системы исходного справочника (соответствует reference.owner)
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: src-ref
+          description: Код исходного справочника (соответствует reference.code)
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: src-value
+          description: Значение исходного справочника (соответствует value.value)
+          in: query
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+          examples:
+            oneValue:
+              summary: Пример одного значения
+              value: [FTTB]   # ?src-value=FTTB
+            multipleValues:
+              summary: Пример нескольких значений
+              value: [FTTB, xPON]   # src-value=FTTB&src-value=xPON
+        - name: tgt-owner
+          description: Код мастер-системы целевого справочника (соответствует reference.owner)
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: tgt-ref
+          description: Код целевого справочника (соответствует reference.code)s. Если не указан, то выдается маппинг на все справочники целевой системы
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        200:
+          description: Выдает список маппингов значений между справочниками
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ValueMap'
+
+    post:
+      description: Добавить маппинги
+      tags:
+        - mappings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/ValueMap'
+      responses:
+        204:
+          description: Пустой ответ
+
+    patch:
+      description: Изменить маппинги
+      tags:
+        - mappings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/MappingOps'
+            examples:
+              addMapping:
+                description: Пример добавления маппинга
+                value:
+                  op: add
+                  value: FTTx
+                  reference: technology-epc
+                  owner: ALL.ALL.EPC
+                  mappings:
+                  - value: FTTB
+                    reference: technology
+                    owner: ALL.ALL.EISSD
+                  - value: FTTx
+                    reference: technology
+                    owner: CTK.ALL.CRM
+              deleteMapping:
+                description: Пример удаления определенного маппинга
+                value: 
+                  op: remove
+                  value: FTTx
+                  reference: technology-epc
+                  owner: ALL.ALL.EPC
+                  mappings:
+                  - value: FTTB
+                    reference: technology
+                    owner: ALL.ALL.EISSD
+              deleteAllMappings:
+                description: Пример удаления всех маппингов значения исходного справочника
+                value: 
+                  op: remove
+                  value: FTTx
+                  reference: technology-epc
+                  owner: ALL.ALL.EPC
+      responses:
+        204:
+          description: Пустой ответ
+
+              
+components:
+  schemas:
+    Reference:
+      description: Справочник
+      required:
+        - id
+        - code
+        - title
+        - owner
+      properties:
+        id:
+          title: Идентификатор
+          type: integer
+          readOnly: true
+        code:
+          title: Код справочника
+          type: string
+        title:
+          title: Наименование справочника
+          type: string
+        owner:
+          title: Код мастер-системы справочника
+          type: string
+          
+    Value:
+      description: Значение справочника
+      required:
+        - id
+        - value
+      properties:
+        id:
+          title: Идентификатор
+          type: integer
+          readOnly: true
+        value:
+          title: Значение справочника
+          type: string
+        title:
+          title: Наименование значения
+          type: string
+
+    ValueMap:
+      description: Значение с маппингами на другие справочники
+      allOf:
+      - $ref: '#/components/schemas/MappingValue'
+      - type: object
+        properties:
+          mappings:
+            type: array
+            items:
+              $ref: '#/components/schemas/MappingValue'
+      example:
+        value: FTTx
+        reference: technology-epc
+        owner: ALL.ALL.EPC
+        mappings:
+        - value: FTTB
+          reference: technology
+          owner: ALL.ALL.EISSD
+        - value: FTTx
+          reference: technology
+          owner: CTK.ALL.CRM
+
+    MappingValue:
+      description: Запись о маппинге
+      required:
+        - value
+        - reference
+        - owner
+      properties:
+        value:
+          type: string
+          title: Значение справочника
+        reference:
+          type: string
+          title: Код справочника, к к-му относится значение
+        owner:
+          type: string
+          title: Код мастер-системы справочника
+
+        
+    MappingOps:
+      description: Операции изменения маппингов (для PATCH)
+      allOf:
+        - type: object
+          required:
+            - op
+          properties:
+            op: 
+              title: Выполняемая операция
+              type: string
+              enum:
+                - add
+                - replace
+                - remove
+        - $ref: '#/components/schemas/ValueMap'
+      example:
+        op: add
+        value: FTTx
+        reference: technology-epc
+        owner: ALL.ALL.EPC
+        mappings:
+        - value: FTTB
+          reference: technology
+          owner: ALL.ALL.EISSD
+        - value: FTTx
+          reference: technology
+          owner: CTK.ALL.CRM
